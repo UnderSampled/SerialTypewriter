@@ -1,5 +1,5 @@
 /*
- * Serial_Genesis_Controller.c
+ * Serial Typewriter.c
  *
  * Created: 5/25/2011 3:23:44 AM
  *  Author: Stephen Christie
@@ -11,174 +11,174 @@
 
 #include "USART_LIB.h"
 
-#define CORRECT 'C'
-#define WORDERASER 'W'
-#define MARGIN 'M'
-#define CODE '^'
-#define RIGHTSHIFT 'R'
-#define RETURN 'E'
-#define FRACTION 'F'
-#define BACKSPACE 'B'
-#define TABS 'S'
-#define TAB 'T'
-#define LOCK 'K'
-#define LEFTSHIFT 'L'
+#define META 0x80
+#define SHIFT 0x80
+#define CODE 0x20
 
-uint8_t KeyMap[]={
-	CORRECT,	WORDERASER,	' ',		MARGIN,	CODE,	'/',	RIGHTSHIFT,
+/*uint8_t KeyMap[]={
 	'.',		',',		'm',		'\'',	';',	'l',	'k',
 	'j',		RETURN,		FRACTION,	'p',	'o',	'i',	'u',
 	BACKSPACE,	'=',		'-',		'0',	'9',	'8',	'7',
 	'6',		'5',		'4',		'3',	'2',	'1',	TABS,
 	'y',		't',		'r',		'e',	'w',	'q',	TAB,
 	'h',		'g',		'f',		'd',	's',	'a',	LOCK,
-	'n',		'b',		'v',		'c',	'x',	'z',	LEFTSHIFT
+	'n',		'b',		'v',		'c',	'x',	'z',	LEFTSHIFT,
+	CORRECT,	WORDERASER,	' ',		MARGIN,	CODE,	'/',	RIGHTSHIFT
+};*/
+
+uint8_t CharMap[]={
+	255,	255,	255,	255,	255,	255,	255,	255,
+	14,		34,		132,	255,	255,	8,		255,	255,
+	255,	255,	255,	255,	255,	255,	255,	255,
+	255,	255,	255,	255,	255,	255,	255,	255,
+	51,		82,		59,		80,		79,		78,		76,		3,
+	74,		73,		75,		71,		1,		16,		0,		54,
+	17,		26,		25,		24,		23,		22,		21,		20,
+	19,		18,		4,		60,		255,	15,		255,	110,
+	81,		96,		99,		101,	94,		87,		93,		92,
+	91,		68,		63,		62,		61,		58,		98,		67,
+	66,		89,		86,		95,		85,		69,		100,	88,
+	102,	84,		103,	125,	255,	124,	145,	72,
+	142,	40,		43,		45,		38,		31,		37,		36,
+	35,		12,		7,		6,		5,		2,		42,		11,
+	10,		33,		30,		39,		29,		13,		44,		32,
+	46,		28,		47,		255,	255,	255,	140,	49
 };
 
-uint8_t Key;
-uint8_t LastKey;
-
-uint8_t x;
-uint8_t y;
-
-int main(void)
+/*void pressKey(uint8_t key)
 {
-	USART_Init(38400);
+	uint8_t outPin;
+	uint8_t inPin;
+	uint8_t metaOutPin;
 	
-	DDRA = 0x00; //7 inputs from keyboard
-	PORTA = 0x7F; //Pulled up
+	uint8_t lastPINC;
 	
-	//DDRC = 0xFF; //8 outputs to keyboard
-	//PORTC = 0x00; //Low
-	
-	DDRC = 0xFF; //8 outputs
-	PORTC = 0x00; //Low
-
-	Key = 0;
-	LastKey = 0;
-	
-	//uint8_t ScanValue;
-	
-	while(1)
-    {					
-		if (~PINA) {
-			for(x=0 ; x<7 ; x++) {
-				if (~PINA & (1<<x)) {
-					for(y=0 ; y<8 ; y++) {
-						PORTC = (1<<y);
-						if (PINA & (1<<x)) {
-							USART_SendByte(KeyMap[x+y*7]);
-						}
-					}	
-				}							
-			}
-		}
+	outPin = 1 << ((key%7)+1);
+	inPin = (1 << (key/7));
 		
-		//for(x=0 ; x<8 ; x++)
-		//{
-			//DDRC = (1<<x);
-			//if (~(PINA) & 0x7F) {
-				//for(y=0 ; y<7 ; y++)
-				//{
-					//////Key = KeyMap[x+y*7];
-					////Key |=(1<<y);
-					////USART_SendChangingByte(KeyMap[y+x*7]);
-					////USART_SendByte(x);
-					////USART_SendByte(y);
-					////if((~PINA) & (1<<y))
-						//USART_SendByte(KeyMap[y+x*7]);
-				//}
-				//USART_SendChangingByte(~(PINA) & 0x7F);
-			//}
-		//}
-		
-		//for(x=0 ; x<8 ; x++)
-		//{
-			//DDRC = (1<<x);
-			////if (~(PINA) & 0x7F)
-				//for(y=0 ; y<7 ; y++)
-					//if((~PINA) & (1<<y))
-						//USART_SendByte(KeyMap[y+x*7]);
-		//}
-		
-		//for(x=0 ; x<7 ; x++)
-			////if ((~PINA) & (x<<1))
-				//for(y=0 ; y<8 ; y++)
-				//{
-					//DDRC = (1<<x);
-					////if((~PINA) & (1<<x))
-						//USART_SendByte(KeyMap[x+y*7]);
-				//}
-				
-		//for(y = 0; y < 8; y++)
-		//{
-			//PORTC = ~(1<<y);
-			//ScanValue = PINA;
-			//
-			//if (~ScanValue)
-			//{
-				//for(x = 0; x < 7; x++)
-				//{
-					//if ((1<<x) & ~ScanValue)
-						//Key = KeyMap[x+y*7];
-				//}
-			//}
-		//}
-		
-		//if(LastKey != Key)
-		//{
-			//if(Key)
-				//USART_SendByte(Key);
-			//LastKey = Key;
-		//}
-		
-		Key = 0;		
-	}	
-	return 0;
-}
-
-//uint8_t getSpreadPinD()
-//{
-	//return ((PINA & 0x80)>>7)|((PINB & 0x80)>>6)|((PIND & 0xFC)); // Last bit of PINA and PINB shifted and ORed with the last 6 bits of PIND
-//}
-//
-//int main(void)
-//{
-	//DDRA &= 0x7F; 
-	//DDRB &= 0x7F; //Set Distant input pins
-	//
-	////PORTA |= 0x80;
-	////PORTB = 0xFF;
-	////PORTD = 0xFF; //Set pull ups
-	//
-	//USART_Init(38400);
-	//
-	//while(1)
-	//{
-		//x = PINB;
-		//y = getSpreadPinD();
-		//
-		//USART_SendByte(x);
-		//USART_SendByte(y);
-	//}
-	//return 0;	
-//}
-
-/*
-int main(void)
-{
-	PORTA = 0x7F; //Set Port A pull ups
-	
-	USART_Init(38400);
-	
-	while(1)
+	if (key < 56)
 	{
-		x = PINA;
-		y = PINC;
-		
-		USART_SendByte(x);
-		USART_SendByte(y);
+		metaOutPin = 0;
 	}
+	else if (key < 112)
+	{
+		metaOutPin = SHIFT;
+	}
+	else if (key < 168)
+	{
+		metaOutPin = CODE;
+	}
+	else
+	{
+		return;
+	}
+	
+	USART_SendByte(key);
+
+	PORTB = 0;
+	DDRB = outPin;// | metaOutPin;
+	
+	for(int i = 20 ; i ; i--)
+	{
+		lastPINC = PINC;
+		//USART_SendByte(lastPINC);
+		if (!lastPINC)
+			PORTB = 0; //Ground
+		//if (lastPINC & META)
+		//	PORTB = metaOutPin; //Raise metaOutPin
+		if (lastPINC & inPin)
+			PORTB = outPin; //Raise outPin
+		while (lastPINC & PINC);
+	}
+	
+	PORTB = 0; //Float all
+	DDRB = 0; //Float all
+	
+	_delay_ms(100);
+}*/
+
+void pressKey2(uint8_t key)
+{
+	//uint8_t outPin = 1 << ((key%7)+1);
+	//uint8_t inPin = 1 << (key/7);
+	
+	//uint8_t lastPINC;
+	
+	uint8_t out[8] = {0};
+	out[key/7]= 1 << ((key%7)+1);
+	//out[7] |= SHIFT;
+	
+	//uint8_t* j = &out[1];
+	//uint8_t nextOut = out[0];
+	//uint8_t scanPin = 1;
+	
+	uint8_t out0 = out[0];
+	uint8_t out1 = out[1];
+	uint8_t out2 = out[2];
+	uint8_t out3 = 0x40;
+	uint8_t out4 = out[4];
+	uint8_t out5 = out[5];
+	uint8_t out6 = out[6];
+	uint8_t out7 = out[7];
+	
+	PORTB = 0;
+	DDRB = 0xFF;
+	
+	while(1)
+	{	while (!(PINC & 1));
+		PORTB = out0;
+		while (!(PINC & 2));
+		PORTB = out1;
+		while (!(PINC & 4));
+		PORTB = out2;
+		while (!(PINC & 8));
+		PORTB = out3;
+		while (!(PINC & 16));
+		PORTB = out4;
+		while (!(PINC & 32));
+		PORTB = out5;
+		while (!(PINC & 64));
+		PORTB = out6;
+		while (!(PINC & 128));
+		PORTB = out7;
+		
+		/*do
+		{
+			while (!(PINC & scanPin));
+			PORTB = nextOut;
+			nextOut = *j++;
+		} while (scanPin << 1);
+	
+		j = &out[1];
+		nextOut = out[0];
+		scanPin = 1;*/
+		
+		//PORTB = 0; //Ground outPin, leave others floating
+		//while (!(PINC & inPin));
+		//PORTB = outPin; //Raise outPin, leave others floating
+		//while (PINC & inPin);
+	}
+	
+	PORTB = 0; //Float all
+	DDRB = 0; //Float all
+	
+	_delay_ms(100);
+}
+
+void TypeStr(char Data[])
+{
+	for (char *ch = &Data[0] ; *ch ; ch++)
+	{
+		pressKey2(CharMap[(int)*ch]);
+	}
+}
+
+int main(void)
+{
+	USART_Init(38400);
+	DDRC = 0x00;
+	
+	TypeStr("hello world.");
+	
 	return 0;
 }
-*/
